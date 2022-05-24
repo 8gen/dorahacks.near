@@ -1,0 +1,7 @@
+contract/target
+node_modules/
+res/
+neardev/
+target/
+app/dist/
+example

@@ -1,0 +1,24 @@
+[package]
+name = "grant"
+version = "0.1.0"
+authors = ["Nikita Kuznetosv <n@8gen.team>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[profile.release]
+codegen-units = 1
+# Tell `rustc` to optimize for small code size.
+opt-level = "z"
+lto = true
+debug = false
+panic = "abort"
+overflow-checks = true
+
+[dependencies]
+near-sdk = "4.0.0-pre.8"
+near-contract-standards = "4.0.0-pre.8"
+serde = "1"
+serde_json = "1"
+witgen = { path = "../fake_witgen" }

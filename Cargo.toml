@@ -1,0 +1,29 @@
+[package]
+name = "dorahacks"
+version = "0.1.1"
+authors = ["Nikita Kuznetsov <n@8gen.team>"]
+edition = "2018"
+
+[dependencies]
+near-sdk = "4.0.0-pre.9"
+near-sdk-sim = "4.0.0-pre.9"
+near-contract-standards = "4.0.0-pre.9"
+
+dummy_ft = { path = "./dummy_ft" }
+grant = { path = "./grant" }
+
+[profile.release]
+codegen-units = 1
+# Tell `rustc` to optimize for small code size.
+opt-level = "z"
+lto = true
+debug = false
+panic = "abort"
+overflow-checks = true
+
+[workspace]
+# remember to include a member for each contract
+members = [
+  "grant",
+  "dummy_ft",
+]

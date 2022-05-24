@@ -1,0 +1,147 @@
+// This is a generated file by witgen (https://github.com/bnjjj/witgen), please do not edit yourself, you can generate a new one thanks to cargo witgen generate command. (cargo-witgen v0.12.0) 
+
+
+// This is a generated file by witgen (https://github.com/bnjjj/witgen), please do not edit yourself, you can generate a new one thanks to cargo witgen generate command. (witme v0.2.0) 
+
+///  StorageUsage is used to count the amount of storage used by a contract.
+type storage-usage = u64
+
+///  Balance is a type for storing amounts of tokens, specified in yoctoNEAR.
+type balance = u128
+
+///  Represents the amount of NEAR tokens in "gas units" which are used to fund transactions.
+type gas = u64
+
+///  base64 string.
+type base64-vec-u8 = string
+
+///  Raw type for duration in nanoseconds
+type duration = u64
+
+///  @minLength 2
+///  @maxLength 64
+///  @pattern ^(([a-z\d]+[-_])*[a-z\d]+\.)*([a-z\d]+[-_])*[a-z\d]+$
+type account-id = string
+
+///  @minLength 2
+///  @maxLength 64
+///  @pattern ^(([a-z\d]+[-_])*[a-z\d]+\.)*([a-z\d]+[-_])*[a-z\d]+$
+type valid-account-id = string
+
+///  String representation of a u128-bit integer
+///  @pattern ^[0-9]+$
+type u128 = string
+
+///  Public key in a binary format with base58 string serialization with human-readable curve.
+///  The key types currently supported are `secp256k1` and `ed25519`.
+/// 
+///  Ed25519 public keys accepted are 32 bytes and secp256k1 keys are the uncompressed 64 format.
+type public-key = string
+
+///  Raw type for timestamp in nanoseconds
+type timestamp = u64
+
+
+
+record config {
+    version: string,
+    owner-id: account-id,
+    operators: list<account-id>,
+    current-round: option<round>,
+    fee-point: u32,
+    default-duration: u32,
+    default-vote-cost: u128,
+    fee-amount: u128,
+    motivation: string
+}
+
+
+
+record project {
+    name: string,
+    description: string,
+    external-url: string,
+    image: string,
+    round-id: round-id,
+    owner: account-id,
+    created-at: u32,
+    total-votes: u64,
+    grants: u128,
+    support-area: u64,
+    withdrawn: u128
+}
+
+type project-id = tuple<round-id, account-id>
+
+enum round-status {
+    active,
+    finished,
+}
+
+
+record round {
+    created-at: u32,
+    end-at: u32,
+    pure-support-pool: u128,
+    id: round-id,
+    start-at: u32,
+    support-area: u64,
+    support-pool: u128,
+    vote-cost: u128,
+    status: round-status
+}
+
+type round-id = u64
+
+config: function() -> config
+
+///  change
+sudo-config: function(fee-point: option<u32>, default-duration: option<u32>, default-vote-cost: option<u128>)
+///  change
+set-owner: function(new-owner-id: account-id)
+///  Get operators
+operators: function() -> list<account-id>
+
+///  Extend operators. Only can be called by owner.
+///  change
+extend-operators: function(operators: list<account-id>)
+///  Remove operators. Only can be called by owner.
+///  change
+remove-operators: function(operators: list<account-id>)
+///  change
+new-project: function(name: string, description: string, external-url: string, image: string) -> project
+
+grant-for: function(project-id: project-id) -> u128
+
+///  change
+withdraw: function(project-id: project-id, amount: u128)
+project: function(project-id: project-id) -> option<project>
+
+projects: function(limit: option<u32>, offset: option<u32>) -> list<project>
+
+projects-for-owner: function(owner-id: account-id, limit: option<u32>, offset: option<u32>) -> list<project>
+
+///  change
+vote: function(project-id: project-id, votes: u64) -> project
+
+///  change
+sudo-new-default-round: function() -> round
+
+///  change
+sudo-new-round: function(start-at: u32, end-at: u32) -> round
+
+///  change
+sudo-update-current-round: function(danger: bool, status: option<round-status>, start-at: option<u32>, end-at: option<u32>) -> round
+
+///  change
+sudo-finish-current-round: function() -> round
+
+round: function(round-id: round-id) -> option<round>
+
+rounds: function(limit: option<u32>, offset: option<u32>) -> list<tuple<round, u32>>
+
+///  change
+donate: function() -> round
+
+///  change
+init: function()

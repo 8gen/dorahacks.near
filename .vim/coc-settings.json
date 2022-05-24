@@ -1,0 +1,7 @@
+{
+    "rust-analyzer.rustfmt.enableRangeFormatting": true,
+    "rust-analyzer.rustfmt.extraArgs": ["+nightly"],
+    "coc.preferences.formatOnSaveFiletypes": [
+        "toml","bash", "rust", "rs"
+    ]
+}
