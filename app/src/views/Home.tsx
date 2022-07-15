@@ -43,7 +43,7 @@ const App = ({near}: {near: NEARType}) => {
     useEffect(() => {
         if(near.loaded) {
             (async () => {
-                let projects = await near.grant.projects({});
+                let projects = await near.grant.list_projects({});
                 setProjects(projects);
             })();
         }

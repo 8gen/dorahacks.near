@@ -88,12 +88,13 @@ record round {
     support-area: u64,
     support-pool: u128,
     vote-cost: u128,
+    projects: u32,
     status: round-status
 }
 
 type round-id = u64
 
-config: function() -> config
+get-config: function() -> config
 
 ///  change
 sudo-config: function(fee-point: option<u32>, default-duration: option<u32>, default-vote-cost: option<u128>)
@@ -115,9 +116,9 @@ grant-for: function(project-id: project-id) -> u128
 
 ///  change
 withdraw: function(project-id: project-id, amount: u128)
-project: function(project-id: project-id) -> option<project>
+get-project: function(project-id: project-id) -> option<project>
 
-projects: function(limit: option<u32>, offset: option<u32>) -> list<project>
+list-projects: function(limit: option<u32>, offset: option<u32>) -> list<project>
 
 projects-for-owner: function(owner-id: account-id, limit: option<u32>, offset: option<u32>) -> list<project>
 
@@ -136,9 +137,11 @@ sudo-update-current-round: function(danger: bool, status: option<round-status>, 
 ///  change
 sudo-finish-current-round: function() -> round
 
-round: function(round-id: round-id) -> option<round>
+get-current-round: function() -> option<round>
 
-rounds: function(limit: option<u32>, offset: option<u32>) -> list<tuple<round, u32>>
+get-round: function(round-id: round-id) -> option<round>
+
+list-rounds: function(limit: option<u32>, offset: option<u32>) -> list<round>
 
 ///  change
 donate: function() -> round

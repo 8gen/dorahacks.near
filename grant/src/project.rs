@@ -51,6 +51,7 @@ impl Contract {
     ) -> Project {
         let project_id: ProjectId = (self.current_round_id, env::predecessor_account_id());
         self.assert_unique_project(&project_id);
+        let mut round: Round = self.get_current_round().expect("Expected available round");
         let project = Project {
             name,
             description,
@@ -64,6 +65,8 @@ impl Contract {
             support_area: 0,
             withdrawn: 0.into(),
         };
+        round.projects += 1;
+        self.rounds.insert(&self.current_round_id, &round);
         self.projects.insert(&project_id, &project);
         {
             let mut rounds =
@@ -85,7 +88,7 @@ impl Contract {
 
     pub fn grant_for(&self, project_id: ProjectId) -> (U128, U128) {
         let project = self.projects.get(&project_id).expect("ERR_PROJECT_NOT_FOUND");
-        let round = self.round(project.round_id).expect("ERR_ROUND_NOT_FOUND");
+        let round = self.get_round(project.round_id).expect("ERR_ROUND_NOT_FOUND");
         if round.id == self.current_round_id && round.is_active() {
             (U128(0), U128(0))
         } else {
@@ -100,7 +103,7 @@ impl Contract {
 
     pub fn withdraw(&mut self, project_id: ProjectId, amount: U128) -> PromiseOrValue<U128> {
         let mut project = self.projects.get(&project_id).expect("ERR_PROJECT_NOT_FOUND");
-        self.round(project.round_id).expect("ERR_ROUND_NOT_FOUND");
+        self.get_round(project.round_id).expect("ERR_ROUND_NOT_FOUND");
         let (withdrawable, _) = self.grant_for(project_id.clone());
         require!(amount.0 <= withdrawable.0, "ERR_TOO_MUCH");
         project.withdrawn = U128(project.withdrawn.0 + amount.0);
@@ -108,18 +111,20 @@ impl Contract {
         Promise::new(project.owner).transfer(amount.0).into()
     }
 
-    pub fn project(&self, project_id: ProjectId) -> Option<Project> {
+    pub fn get_project(&self, project_id: ProjectId) -> Option<Project> {
         self.projects.get(&project_id)
     }
 
-    pub fn projects(&self, limit: Option<u32>, offset: Option<u32>) -> Vec<Project> {
+    pub fn list_projects(&self, limit: Option<u32>, offset: Option<u32>) -> Vec<Project> {
         let limit = limit.unwrap_or(u32::MAX);
         let offset = offset.unwrap_or(0);
-        self.projects
+        self.round_projects
+            .get(&self.current_round_id)
+            .unwrap()
             .iter()
             .skip(offset as usize)
             .take(limit as usize)
-            .map(|(_, project)| project)
+            .map(|project_id| self.projects.get(&project_id).unwrap())
             .collect()
     }
 
@@ -148,7 +153,7 @@ impl Contract {
     pub fn vote(&mut self, project_id: ProjectId, votes: u64) -> Project {
         let voter = env::predecessor_account_id();
         let storage_used = env::storage_usage();
-        let mut round: Round = self.round(project_id.0).expect("ERR_ROUND_NOT_FOUND");
+        let mut round: Round = self.get_round(project_id.0).expect("ERR_ROUND_NOT_FOUND");
         require!(round.is_active(), "ERR_ROUND_NOT_ACTIVE");
         require!(project_id.0 == self.current_round_id, "ERR_ROUND_WRONG");
 

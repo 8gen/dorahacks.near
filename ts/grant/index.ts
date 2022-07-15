@@ -104,6 +104,7 @@ export interface Round {
   support_area: u64;
   support_pool: U128;
   vote_cost: U128;
+  projects: u32;
   status: RoundStatus;
 }
 export type RoundId = u64;
@@ -112,8 +113,8 @@ export class Contract {
   
   constructor(public account: Account, public readonly contractId: string){}
   
-  config(args = {}, options?: ViewFunctionOptions): Promise<Config> {
-    return this.account.viewFunction(this.contractId, "config", args, options);
+  get_config(args = {}, options?: ViewFunctionOptions): Promise<Config> {
+    return this.account.viewFunction(this.contractId, "get_config", args, options);
   }
   async sudo_config(args: {
     fee_point?: u32;
@@ -252,16 +253,16 @@ export class Contract {
   }, options?: ChangeMethodOptions): transactions.Action {
     return transactions.functionCall("withdraw", args, options?.gas ?? DEFAULT_FUNCTION_CALL_GAS, options?.attachedDeposit ?? new BN(0))
   }
-  project(args: {
+  get_project(args: {
     project_id: ProjectId;
   }, options?: ViewFunctionOptions): Promise<Project | null> {
-    return this.account.viewFunction(this.contractId, "project", args, options);
+    return this.account.viewFunction(this.contractId, "get_project", args, options);
   }
-  projects(args: {
+  list_projects(args: {
     limit?: u32;
     offset?: u32;
   }, options?: ViewFunctionOptions): Promise<Project[]> {
-    return this.account.viewFunction(this.contractId, "projects", args, options);
+    return this.account.viewFunction(this.contractId, "list_projects", args, options);
   }
   projects_for_owner(args: {
     owner_id: AccountId;
@@ -348,16 +349,19 @@ export class Contract {
   sudo_finish_current_roundTx(args = {}, options?: ChangeMethodOptions): transactions.Action {
     return transactions.functionCall("sudo_finish_current_round", args, options?.gas ?? DEFAULT_FUNCTION_CALL_GAS, options?.attachedDeposit ?? new BN(0))
   }
-  round(args: {
+  get_current_round(args = {}, options?: ViewFunctionOptions): Promise<Round | null> {
+    return this.account.viewFunction(this.contractId, "get_current_round", args, options);
+  }
+  get_round(args: {
     round_id: RoundId;
   }, options?: ViewFunctionOptions): Promise<Round | null> {
-    return this.account.viewFunction(this.contractId, "round", args, options);
+    return this.account.viewFunction(this.contractId, "get_round", args, options);
   }
-  rounds(args: {
+  list_rounds(args: {
     limit?: u32;
     offset?: u32;
-  }, options?: ViewFunctionOptions): Promise<Record<Round, u32>> {
-    return this.account.viewFunction(this.contractId, "rounds", args, options);
+  }, options?: ViewFunctionOptions): Promise<Round[]> {
+    return this.account.viewFunction(this.contractId, "list_rounds", args, options);
   }
   async donate(args = {}, options?: ChangeMethodOptions): Promise<Round> {
     return providers.getTransactionLastResult(await this.donateRaw(args, options));
@@ -382,11 +386,11 @@ export class Contract {
 * 
 * @contractMethod view
 */
-export interface Config {
+export interface GetConfig {
   args: {};
   
 }
-export type Config__Result = Config;
+export type GetConfig__Result = Config;
 /**
 * 
 * @contractMethod change
@@ -552,25 +556,25 @@ export type Withdraw__Result = void;
 * 
 * @contractMethod view
 */
-export interface Project {
+export interface GetProject {
   args: {
     project_id: ProjectId;
   };
   
 }
-export type Project__Result = Project | null;
+export type GetProject__Result = Project | null;
 /**
 * 
 * @contractMethod view
 */
-export interface Projects {
+export interface ListProjects {
   args: {
     limit?: u32;
     offset?: u32;
   };
   
 }
-export type Projects__Result = Project[];
+export type ListProjects__Result = Project[];
 /**
 * 
 * @contractMethod view
@@ -699,25 +703,34 @@ export type SudoFinishCurrentRound__Result = Round;
 * 
 * @contractMethod view
 */
-export interface Round {
+export interface GetCurrentRound {
+  args: {};
+  
+}
+export type GetCurrentRound__Result = Round | null;
+/**
+* 
+* @contractMethod view
+*/
+export interface GetRound {
   args: {
     round_id: RoundId;
   };
   
 }
-export type Round__Result = Round | null;
+export type GetRound__Result = Round | null;
 /**
 * 
 * @contractMethod view
 */
-export interface Rounds {
+export interface ListRounds {
   args: {
     limit?: u32;
     offset?: u32;
   };
   
 }
-export type Rounds__Result = Record<Round, u32>;
+export type ListRounds__Result = Round[];
 /**
 * 
 * @contractMethod change

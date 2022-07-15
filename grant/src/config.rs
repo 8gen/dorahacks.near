@@ -21,7 +21,7 @@ pub struct Config {
 
 #[near_bindgen]
 impl Contract {
-    pub fn config(&self) -> Config {
+    pub fn get_config(&self) -> Config {
         Config {
             version: env!("CARGO_PKG_VERSION").to_string(),
             owner_id: self.owner_id.clone(),

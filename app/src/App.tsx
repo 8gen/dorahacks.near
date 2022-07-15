@@ -59,7 +59,7 @@ async function initNEARContract(): Promise<NEARType> {
         walletConnection.account(),
         nearConfig.contractName,
     );
-    let config = await grant.config();
+    let config = await grant.get_config();
     let base = {
         grant,
         grantConfig: config,

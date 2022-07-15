@@ -25,6 +25,7 @@ pub struct Round {
     pub support_area: u64,
     pub support_pool: U128,
     pub vote_cost: U128,
+    pub projects: u32,
     pub status: RoundStatus,
 }
 
@@ -62,6 +63,7 @@ impl Contract {
             vote_cost: self.default_vote_cost,
             support_pool: 0.into(),
             pure_support_pool: 0.into(),
+            projects: 0,
             support_area: 0,
         };
         self.rounds.insert(&self.current_round_id, &round);
@@ -81,7 +83,7 @@ impl Contract {
     ) -> Round {
         self.assert_owner();
         require!(danger, "ERR_DO_NOT_PLAY_WITH_ME");
-        let mut round = self.round(self.current_round_id).expect("ERR_ROUND_NOT_FOUND");
+        let mut round = self.get_round(self.current_round_id).expect("ERR_ROUND_NOT_FOUND");
         update_if_some!(round, status);
         update_if_some!(round, start_at);
         update_if_some!(round, end_at);
@@ -92,33 +94,35 @@ impl Contract {
 
     pub fn sudo_finish_current_round(&mut self) -> Round {
         self.assert_owner_or_operator();
-        let mut round = self.round(self.current_round_id).expect("ERR_ROUND_NOT_FOUND");
+        let mut round = self.get_round(self.current_round_id).expect("ERR_ROUND_NOT_FOUND");
         require!(!round.is_active(), "ERR_ROUND_ACTIVE");
         round.status = RoundStatus::Finished;
         self.rounds.insert(&self.current_round_id, &round);
         round
     }
 
-    pub fn round(&self, round_id: RoundId) -> Option<Round> {
+    pub fn get_current_round(&self) -> Option<Round> {
+        self.rounds.get(&self.current_round_id)
+    }
+
+    pub fn get_round(&self, round_id: RoundId) -> Option<Round> {
         self.rounds.get(&round_id)
     }
 
-    pub fn rounds(&self, limit: Option<u32>, offset: Option<u32>) -> Vec<(Round, u32)> {
+    pub fn list_rounds(&self, limit: Option<u32>, offset: Option<u32>) -> Vec<Round> {
         let limit = limit.unwrap_or(u32::MAX);
         let offset = offset.unwrap_or(0);
         self.rounds
             .iter()
             .skip(offset as usize)
             .take(limit as usize)
-            .map(|(round_id, round)| {
-                (round, self.round_projects.get(&round_id).iter().len() as u32)
-            })
+            .map(|(_round_id, round)| round)
             .collect()
     }
 
     #[payable]
     pub fn donate(&mut self) -> Round {
-        let mut round: Round = self.round(self.current_round_id).expect("ERR_ROUND_NOT_FOUND");
+        let mut round: Round = self.get_round(self.current_round_id).expect("ERR_ROUND_NOT_FOUND");
         require!(round.is_active(), "ERR_ROUND_NOT_ACTIVE");
         let deposit = env::attached_deposit();
         let platform_fee = deposit * (self.fee_point as u128) / 10000;
